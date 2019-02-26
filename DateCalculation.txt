@@ -1,0 +1,34 @@
+	public boolean isBankHoliday(String dateStr) {
+		jdbc = (JdbcTemplate) BeanUtil.getBean("eVasJdbcTemplate");
+		String sqlStr = ""; // put the sql querry
+		List<Map<String,Object>> rows = jdbc.queryForList(sqlStr);
+		String tempDate;
+		List<String> holidayList = new ArrayList<>();
+		for(Map row : rows) {
+			tempDate = calculateDate((Integer)row.get("MONTH"),(Integer)row.get("WEEKDAY"),(Integer)row.get("DAY"),(Integer)row.get("OFFSET"));
+			holidayList.add(tempDate);
+		}
+		return holidayList.contains(dateStr);
+	}
+	
+	public static String calculateDate(Integer month, Integer weekday, Integer day, Integer offset) {
+		Calendar cal = Calendar.getInstance();
+		StringBuilder sb = new StringBuilder();
+		sb.append(cal.get(Calendar.YEAR)).append("-");
+		sb.append(String.format("%02d", month)).append("-");
+		if(day != null) {
+			sb.append(String.format("%02d", day));
+		}else {
+			Calendar temp = Calendar.getInstance();
+			temp.set(Calendar.MONTH, month-1);
+			temp.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH));
+			if(temp.get(Calendar.DAY_OF_WEEK) == weekday ) {
+				cal.set(Calendar.WEEK_OF_MONTH,offset);
+			}else {
+				cal.set(Calendar.WEEK_OF_MONTH,offset+1);
+			}
+			cal.set(Calendar.DAY_OF_WEEK,weekday);
+			sb.append(String.format("%02d", cal.get(cal.DATE)));
+		}
+		return sb.toString();
+	}
