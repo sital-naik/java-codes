@@ -11,24 +11,46 @@
 		return holidayList.contains(dateStr);
 	}
 	
-	public static String calculateDate(Integer month, Integer weekday, Integer day, Integer offset) {
+	public  String calculateDate(Integer month, Integer weekday, Integer day, Integer offset) {
 		Calendar cal = Calendar.getInstance();
-		StringBuilder sb = new StringBuilder();
-		sb.append(cal.get(Calendar.YEAR)).append("-");
-		sb.append(String.format("%02d", month)).append("-");
 		if(day != null) {
-			sb.append(String.format("%02d", day));
+			return cal.get(Calendar.YEAR)+"-"+String.format("%02d", month)+"-"+String.format("%02d", day);
 		}else {
-			Calendar temp = Calendar.getInstance();
-			temp.set(Calendar.MONTH, month-1);
-			temp.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH));
-			if(temp.get(Calendar.DAY_OF_WEEK) == weekday ) {
-				cal.set(Calendar.WEEK_OF_MONTH,offset);
-			}else {
-				cal.set(Calendar.WEEK_OF_MONTH,offset+1);
-			}
-			cal.set(Calendar.DAY_OF_WEEK,weekday);
-			sb.append(String.format("%02d", cal.get(cal.DATE)));
+			DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			return formatter.format(getDate(month-1,weekday,offset,cal));
 		}
-		return sb.toString();
+		
+	}
+	
+	public  Date getDate(int month, int dayOfWeek, int offset,  Calendar calendar){
+	    calendar.set(Calendar.DAY_OF_MONTH, 1);
+	    int matchCount = 0;
+	    if(offset == -1) {
+	    	calendar.set(Calendar.MONTH, month+1);
+	    	calendar.add(Calendar.DATE, -1);
+	    	while(true){
+		        if(calendar.get(Calendar.DAY_OF_WEEK) == dayOfWeek) {
+		            matchCount--;
+		        }
+		        if(matchCount == offset){
+		            break;
+		        }
+		        calendar.add(Calendar.DATE, -1);
+		    }
+	    	return calendar.getTime();
+    	}
+	    calendar.set(Calendar.MONTH, month);
+	    while(true){
+	        if(calendar.get(Calendar.DAY_OF_WEEK) == dayOfWeek) {
+	            matchCount++;
+	        }
+	        if(matchCount == offset){
+	            break;
+	        }
+	        calendar.add(Calendar.DATE, 1);
+	        if(calendar.get(Calendar.MONTH) != month){
+	            break;
+	        }
+	    }
+	    return calendar.getTime();
 	}
